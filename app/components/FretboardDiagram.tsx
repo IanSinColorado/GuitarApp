@@ -24,7 +24,7 @@ const notesOnFrets = [
 // Pass in a number of frets to display (1-12) and an array of notes to highlight
 // Notes are passed in 0-indexed by string and fret number
 export default function FretboardDiagram({ numFrets=12,
-  highlightedNotes = [{string: 0, fret: 0, notShow: false}] }: Props) {
+  highlightedNotes = [] }: Props) {
   if (!numFrets || numFrets < 1 || numFrets > 12) {
     return null;
   }

@@ -8,7 +8,7 @@ export default function AboutScreen() {
     <View style={styles.container}>
       <Text style={styles.titleText}>About screen</Text>
       <View style={styles.fretboard}>
-        <FretboardDiagram numFrets={2} highlightedNotes={[{string:0, fret:0}, {string:1, fret:1}]}/>
+        <FretboardDiagram numFrets={2} highlightedNotes={[{string:0, fret:0, notShow:false}, {string:1, fret:1, notShow:true}]}/>
       </View>
     </View>
   );
