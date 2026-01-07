@@ -2,15 +2,75 @@ import { Text, View, StyleSheet, Pressable, FlatList, useWindowDimensions } from
  import { Link } from 'expo-router'; 
 import Svg, { Line, Circle, Text as SvgText, G } from "react-native-svg";
 import FretboardDiagram from '../components/FretboardDiagram';
+import React, {useState, useEffect} from 'react';
 
 export default function Index() {
   const { width } = useWindowDimensions();
   const height = width * 0.5; // keep an aspect ratio
 
+  const [gameStarted, setGameStarted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<{string: number; fret: number; note: string, notShow?: boolean}[]>([]);
+  const [choices, setChoices] = useState<{id: string, note: string}[]>([{id: '1', note: 'A'}, {id: '2', note: 'B'},{id: '3', note: 'C'},{id: '4', note: 'D'}]);
+  const [currentAnswer, setCurrentAnswer] = useState<string>('');
+
   const random_item = (item: any[]) => item[Math.floor(Math.random()*item.length)];
+
+  const generateQuestion = () => {
+    const string = Math.floor(Math.random() * 6);
+    const fret = Math.floor(Math.random() * 13);
+    const note = notesOnFrets[string][fret === 0 ? 0 : fret];
+    setCurrentQuestion([{string, fret, note: note}]);
+    return {string, fret, note: note};
+  };
+
+  const generateAnswers = (correctNote: string) => {
+    // Build a set of unique note names (strings), then map to choice objects
+    const noteSet = new Set<string>();
+    noteSet.add(correctNote);
+    while (noteSet.size < 4) {
+      const randomNote = random_item(allNotesSharp);
+      noteSet.add(randomNote);
+    }
+    const answers = Array.from(noteSet);
+    // Shuffle answers so correct isn't always first
+    answers.sort(() => Math.random() - 0.5);
+    setChoices(answers.map(n => ({ id: n, note: n })));
+    return answers;
+  };
+
+  const startGame = () => {
+    setGameStarted(true);
+    setCurrentAnswer('');
+    const question = generateQuestion();
+    generateAnswers(question.note);
+  }
+
+  const choiceSelected = (note: string) => {
+    setCurrentAnswer(note);
+    const correct = currentQuestion[0]?.note;
+    if (!correct) {
+      alert('No active question.');
+      return;
+    }
+    if (note === correct) {
+      alert('Correct!');
+    } else {
+      alert(`Wrong! The correct answer was ${correct}`);
+    }
+    startGame();
+  }
 
   const allNotesSharp = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
   const allNotesFlat = ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab'];
+
+  const notesOnFrets = [
+    ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"],
+    ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"],
+    ["D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#"],
+    ["G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#"],
+    ["B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#"],
+    ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"]
+  ];
   
   const notePositions: {string: number; fret: number}[] = [];
     for (let i = 0; i < 6; i++) {
@@ -19,19 +79,12 @@ export default function Index() {
         }
     }
 
-  const choices: {id: string, note: string}[] = [
-    {id: '1', note: 'A'},
-    {id: '2', note: 'A#'},
-    {id: '3', note: 'B'}, 
-    {id: '4', note: 'C'},
-  ];
-
   const renderChoice = ({item}: {item: {id: string, note: string}}) => (
     <Pressable
-      style={styles.answerOption}
-      onPress={() => alert(`You selected ${item.note}`)}
+      style={[styles.answerOption, { width: width * 0.15, height: width *  0.1, justifyContent: 'center' }]}
+      onPress={() => choiceSelected(item.note)}
     >
-      <Text style={{color: '#fff', textAlign: 'center'}}>{item.note}</Text>
+      <Text style={{color: '#fff', textAlign: 'center', fontSize: 25}}>{item.note}</Text>
     </Pressable>
   );
 
@@ -42,12 +95,12 @@ export default function Index() {
         Home
       </Link>
       <View style={{width: '90%', height: height, alignItems:"center", justifyContent:"center"}}>
-        <FretboardDiagram numFrets={12} highlightedNotes={[]} />
+        <FretboardDiagram numFrets={12} highlightedNotes={currentQuestion} />
       </View>
       <View style={{width: '90%', height: 100, justifyContent: 'center'}}>
         <Pressable
             style={[styles.button2, { backgroundColor: '#fff' }]}
-            onPress={() => alert('You pressed "Start Game"!')}>
+            onPress={() => startGame()}>
             <Text style={{ color: '#000', fontSize: 20 }}>Start Game</Text>
         </Pressable>
       </View>
@@ -95,7 +148,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   answerOption: {
-    fontSize: 25,
+    fontSize: 40,
     backgroundColor: '#444',
     color: '#fff',
     padding: 5,
