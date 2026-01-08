@@ -1,6 +1,5 @@
-import { View, Text, useWindowDimensions, StyleSheet } from "react-native";
-import Svg, { Line, Circle, Text as SvgText, G } from "react-native-svg";
- import { Link } from 'expo-router'; 
+import { StyleSheet, useWindowDimensions, View } from "react-native";
+import Svg, { Circle, G, Line, Text as SvgText } from "react-native-svg";
 
 type Props = {
   numFrets: number;

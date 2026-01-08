@@ -19,7 +19,7 @@ export default function Index() {
     const string = Math.floor(Math.random() * 6);
     const fret = Math.floor(Math.random() * 13);
     const note = notesOnFrets[string][fret === 0 ? 0 : fret];
-    setCurrentQuestion([{string, fret, note: note}]);
+    setCurrentQuestion([{string, fret, note: note, notShow: true}]);
     return {string, fret, note: note};
   };
 
@@ -95,7 +95,7 @@ export default function Index() {
         Home
       </Link>
       <View style={{width: '90%', height: height, alignItems:"center", justifyContent:"center"}}>
-        <FretboardDiagram numFrets={12} highlightedNotes={currentQuestion} />
+        <FretboardDiagram numFrets={currentQuestion[0]?.fret || 12} highlightedNotes={currentQuestion} />
       </View>
       <View style={{width: '90%', height: 100, justifyContent: 'center'}}>
         <Pressable
