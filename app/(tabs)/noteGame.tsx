@@ -1,6 +1,5 @@
 import { Text, View, StyleSheet, Pressable, FlatList, useWindowDimensions } from 'react-native';
  import { Link } from 'expo-router'; 
-import Svg, { Line, Circle, Text as SvgText, G } from "react-native-svg";
 import FretboardDiagram from '../components/FretboardDiagram';
 import React, {useState, useEffect} from 'react';
 
@@ -12,12 +11,13 @@ export default function Index() {
   const [currentQuestion, setCurrentQuestion] = useState<{string: number; fret: number; note: string, notShow?: boolean}[]>([]);
   const [choices, setChoices] = useState<{id: string, note: string}[]>([{id: '1', note: 'A'}, {id: '2', note: 'B'},{id: '3', note: 'C'},{id: '4', note: 'D'}]);
   const [currentAnswer, setCurrentAnswer] = useState<string>('');
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
 
   const random_item = (item: any[]) => item[Math.floor(Math.random()*item.length)];
 
   const generateQuestion = () => {
     const string = Math.floor(Math.random() * 6);
-    const fret = Math.floor(Math.random() * 13);
+    const fret = Math.floor(Math.random() * 12);
     const note = notesOnFrets[string][fret === 0 ? 0 : fret];
     setCurrentQuestion([{string, fret, note: note, notShow: true}]);
     return {string, fret, note: note};
@@ -54,10 +54,20 @@ export default function Index() {
     }
     if (note === correct) {
       alert('Correct!');
+      setCurrentStreak(currentStreak + 1);
     } else {
-      alert(`Wrong! The correct answer was ${correct}`);
+      alert(`Wrong! The correct answer was ${correct}. Your streak was ${currentStreak}.`);
+      setCurrentStreak(0);
     }
     startGame();
+  }
+
+  const resetGame = () => {
+    setGameStarted(false);
+    setCurrentAnswer('');
+    setCurrentStreak(0);
+    setCurrentQuestion([]);
+    setChoices([{id: '1', note: 'A'}, {id: '2', note: 'B'},{id: '3', note: 'C'},{id: '4', note: 'D'}]);
   }
 
   const allNotesSharp = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
@@ -81,7 +91,7 @@ export default function Index() {
 
   const renderChoice = ({item}: {item: {id: string, note: string}}) => (
     <Pressable
-      style={[styles.answerOption, { width: width * 0.15, height: width *  0.1, justifyContent: 'center' }]}
+      style={[styles.answerOption, { width: width * 0.20, height: width *  0.1, justifyContent: 'center' }]}
       onPress={() => choiceSelected(item.note)}
     >
       <Text style={{color: '#fff', textAlign: 'center', fontSize: 25}}>{item.note}</Text>
@@ -94,29 +104,52 @@ export default function Index() {
       <Link href="/" style={styles.button}>
         Home
       </Link>
-      <View style={{width: '90%', height: height, alignItems:"center", justifyContent:"center"}}>
-        <FretboardDiagram numFrets={currentQuestion[0]?.fret || 12} highlightedNotes={currentQuestion} />
-      </View>
-      <View style={{width: '90%', height: 100, justifyContent: 'center'}}>
-        <Pressable
-            style={[styles.button2, { backgroundColor: '#fff' }]}
-            onPress={() => startGame()}>
-            <Text style={{ color: '#000', fontSize: 20 }}>Start Game</Text>
-        </Pressable>
-      </View>
+      {
+      gameStarted ? (
+        <View style={{width: width * 0.9, height: height * 0.9, alignItems:"center", justifyContent:"center"}}>
+          <FretboardDiagram numFrets={currentQuestion[0]?.fret || 12} highlightedNotes={currentQuestion} />
+        </View>
+      ) : <View style={{width: width * 0.9, height: height * 0.3, alignItems:"center", justifyContent:"center"}}>
+          <Text style={{color: '#fff', fontSize: 18, textAlign: 'center'}}>Press "Start Game" to begin! You will be shown a note on the fretboard, and you must select the correct note name from the options below.</Text>
+        </View>
+      }
+      {
+      !gameStarted ? (
+        <View style={{width: width * 0.5, height: height * 0.1, justifyContent: 'center'}}>
+          <Pressable
+              style={[styles.button2, { backgroundColor: '#fff' }]}
+              onPress={() => startGame()}>
+              <Text style={{ color: '#000', fontSize: 20 }}>Start Game</Text>
+          </Pressable>
+        </View>
+      ) : null
+      }
     </View>
   );
 
   return (
-    <FlatList
-      data={choices}
-      renderItem={renderChoice}
-      keyExtractor={item => item.id}
-      numColumns={4}
-      ListHeaderComponent={renderHeader}
-      contentContainerStyle={styles.contentContainer}
-      style={styles.flatlist}
-    />
+    <View style={{flex:1, backgroundColor: '#25292e', alignItems: 'center', justifyContent: 'center'}}>
+      <FlatList
+        data={choices}
+        renderItem={renderChoice}
+        keyExtractor={item => item.id}
+        numColumns={4}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={styles.contentContainer}
+        style={styles.flatlist}
+      />
+      {
+      gameStarted ? (
+        <View style={{width: width * 0.5, height: height * 0.1, justifyContent: 'center'}}>
+          <Pressable
+              style={[styles.button2, { backgroundColor: '#fff' }]}
+              onPress={() => resetGame()}>
+              <Text style={{ color: '#000', fontSize: 20 }}>Reset Game</Text>
+          </Pressable>
+        </View>
+      ) : null
+      }
+    </View>
   );
 }
 

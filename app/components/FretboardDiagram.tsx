@@ -105,9 +105,9 @@ export default function FretboardDiagram({ numFrets=12,
   });
 
   return (
-    <View style={{ width: "100%", alignItems: 'center', position:'absolute',  }}>
+    <View style={{alignItems: 'center', position:'absolute',  }}>
       <Svg
-        width={width}
+        width={width * 0.9}
         height={height}
         viewBox="0 0 1000 350"
         preserveAspectRatio="xMidYMid meet"
